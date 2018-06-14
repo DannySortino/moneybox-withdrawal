@@ -19,12 +19,10 @@ namespace UnitTestProject1
 
         public MoneyboxTests()
         {
-            this.testFromUser = new User()
-            {
-                Id = Guid.NewGuid(),
-                Name = "testFrom",
-                Email = "testFrom@test.com"
-            };
+            this.testFromUser = new User(
+                id : Guid.NewGuid(),
+                name : "testFrom",
+                email : "testFrom@test.com");
 
 
             this.testFromAccount = new Account(
@@ -34,12 +32,10 @@ namespace UnitTestProject1
                 paidIn : 200m,
                 withdrawn : 50m);
 
-            this.testToUser = new User()
-            {
-                Id = Guid.NewGuid(),
-                Name = "testTo",
-                Email = "testTo@test.com"
-            };
+            this.testToUser = new User(
+                id: Guid.NewGuid(),
+                name: "testTo",
+                email: "testTo@test.com");
 
 
             this.testToAccount = new Account(

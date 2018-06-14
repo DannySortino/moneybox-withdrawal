@@ -4,10 +4,17 @@ namespace Moneybox.App
 {
     public class User
     {
-        public Guid Id { get; set; }
+        public User(string name, string email, Guid? id = null)
+        {
+            this.Id = id ?? Guid.NewGuid();
+            this.Name = name;
+            this.Email = email;
+        }
 
-        public string Name { get; set; }
+        public Guid Id { get; private set; }
 
-        public string Email { get; set; }
+        public string Name { get; private set; }
+
+        public string Email { get; private set; }
     }
 }
