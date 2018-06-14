@@ -17,7 +17,30 @@ namespace Moneybox.App.Features
 
         public void Execute(Guid fromAccountId, decimal amount)
         {
-            // TODO:
+            if (amount < 0m)
+            {
+                throw new InvalidOperationException("Cannot withdraw a negative amount");
+            }
+
+            var account = this.accountRepository.GetAccountById(fromAccountId);
+
+            var afterBalance = account.Balance - amount;
+
+            if (afterBalance < 0m)
+            {
+                throw new InvalidOperationException("Insufficient funds to make a withdrawal");
+            }
+
+            account.Balance -= amount;
+            account.Withdrawn -= amount;
+
+            this.accountRepository.Update(account);
+
+            if (afterBalance < Account.NearPayInLimit)
+            {
+                this.notificationService.NotifyFundsLow(account.User.Email);
+            }
+            
         }
     }
 }
