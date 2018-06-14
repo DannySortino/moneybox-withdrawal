@@ -12,13 +12,14 @@ namespace UnitTestProject1
     public class MoneyboxTests
     {
         Account testFromAccount, testToAccount;
+        User testFromUser, testToUser;
         Mock<IAccountRepository> accountRepository;
         Mock<INotificationService> notificationService;
 
 
         public MoneyboxTests()
         {
-            User testFromUser = new User()
+            this.testFromUser = new User()
             {
                 Id = Guid.NewGuid(),
                 Name = "testFrom",
@@ -26,16 +27,14 @@ namespace UnitTestProject1
             };
 
 
-            this.testFromAccount = new Account()
-            {
-                Id = Guid.NewGuid(),
-                User = testFromUser,
-                Balance = 100m,
-                PaidIn = 200m,
-                Withdrawn = 50m
-            };
+            this.testFromAccount = new Account(
+                id : Guid.NewGuid(),
+                user : testFromUser,
+                balance : 100m,
+                paidIn : 200m,
+                withdrawn : 50m);
 
-            User testToUser = new User()
+            this.testToUser = new User()
             {
                 Id = Guid.NewGuid(),
                 Name = "testTo",
@@ -43,14 +42,12 @@ namespace UnitTestProject1
             };
 
 
-            this.testToAccount = new Account()
-            {
-                Id = Guid.NewGuid(),
-                User = testToUser,
-                Balance = 100m,
-                PaidIn = 200m,
-                Withdrawn = 50m
-            };
+            this.testToAccount = new Account(
+                id: Guid.NewGuid(),
+                user: testToUser,
+                balance: 100m,
+                paidIn: 200m,
+                withdrawn: 50m);
 
             this.accountRepository = new Mock<IAccountRepository>();
             this.notificationService = new Mock<INotificationService>();
@@ -84,7 +81,14 @@ namespace UnitTestProject1
         [TestMethod]
         public void TestIntsufficentFundsTransfer()
         {
-            this.testFromAccount.Balance = 5.0m;
+            this.testFromAccount = new Account(
+                id: Guid.NewGuid(),
+                user: testFromUser,
+                balance: 5.0m,
+                paidIn: 200m,
+                withdrawn: 50m);
+            this.accountRepository.Setup(x => x.GetAccountById(this.testFromAccount.Id)).Returns(() => this.testFromAccount);
+
             decimal startFromBalance = this.testFromAccount.Balance;
 
             TransferMoney transferMoneyFeature = new TransferMoney(accountRepository.Object, notificationService.Object);
@@ -94,7 +98,7 @@ namespace UnitTestProject1
             }
             catch (InvalidOperationException e)
             {
-                StringAssert.Contains(e.Message, "Insufficient funds to make transfer");
+                StringAssert.Contains(e.Message, "Insufficient funds to complete action");
                 return;
             }
             Assert.Fail("No exception was thrown.");
@@ -103,7 +107,14 @@ namespace UnitTestProject1
         [TestMethod]
         public void TestPayinLimitTransfer()
         {
-            this.testToAccount.PaidIn = Account.PayInLimit;
+            this.testToAccount = new Account(
+               id: Guid.NewGuid(),
+               user: testToUser,
+               balance: 100.0m,
+               paidIn: Account.PayInLimit,
+               withdrawn: 50m);
+            this.accountRepository.Setup(x => x.GetAccountById(this.testToAccount.Id)).Returns(() => this.testToAccount);
+
             decimal startFromBalance = this.testFromAccount.Balance;
 
             TransferMoney transferMoneyFeature = new TransferMoney(accountRepository.Object, notificationService.Object);
@@ -132,7 +143,15 @@ namespace UnitTestProject1
         [TestMethod]
         public void TestInsufficentWithdraw()
         {
-            this.testFromAccount.Balance = 1.0m;
+            this.testFromAccount = new Account(
+                id: Guid.NewGuid(),
+                user: testFromUser,
+                balance: 1.0m,
+                paidIn: 200m,
+                withdrawn: 50m);
+            this.accountRepository.Setup(x => x.GetAccountById(this.testFromAccount.Id)).Returns(() => this.testFromAccount);
+
+
             WithdrawMoney withdrawMoneyFeature = new WithdrawMoney(accountRepository.Object, notificationService.Object);
 
             try
@@ -141,7 +160,7 @@ namespace UnitTestProject1
             }
             catch (InvalidOperationException e)
             {
-                StringAssert.Contains(e.Message, "Insufficient funds to make a withdrawal");
+                StringAssert.Contains(e.Message, "Insufficient funds to complete action");
                 return;
             }
             Assert.Fail("No exception was thrown.");
@@ -159,7 +178,7 @@ namespace UnitTestProject1
             }
             catch (InvalidOperationException e)
             {
-                StringAssert.Contains(e.Message, "Cannot withdraw a negative amount");
+                StringAssert.Contains(e.Message, "Cannot complete action with a negative amount");
                 return;
             }
             Assert.Fail("No exception was thrown.");
@@ -177,7 +196,7 @@ namespace UnitTestProject1
             }
             catch (InvalidOperationException e)
             {
-                StringAssert.Contains(e.Message, "Cannot transfer a negative amount");
+                StringAssert.Contains(e.Message, "Cannot complete action with a negative amount");
                 return;
             }
             Assert.Fail("No exception was thrown.");
