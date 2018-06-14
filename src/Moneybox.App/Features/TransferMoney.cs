@@ -17,6 +17,11 @@ namespace Moneybox.App.Features
 
         public void Execute(Guid fromAccountId, Guid toAccountId, decimal amount)
         {
+            if (amount < 0m)
+            {
+                throw new InvalidOperationException("Cannot transfer a negative amount");
+            }
+
             var from = this.accountRepository.GetAccountById(fromAccountId);
             var to = this.accountRepository.GetAccountById(toAccountId);
 
@@ -26,7 +31,7 @@ namespace Moneybox.App.Features
                 throw new InvalidOperationException("Insufficient funds to make transfer");
             }
 
-            if (fromBalance < 500m)
+            if (fromBalance < Account.LowFundsValue)
             {
                 this.notificationService.NotifyFundsLow(from.User.Email);
             }
@@ -37,7 +42,7 @@ namespace Moneybox.App.Features
                 throw new InvalidOperationException("Account pay in limit reached");
             }
 
-            if (Account.PayInLimit - paidIn < 500m)
+            if (Account.PayInLimit - paidIn < Account.NearPayInLimit)
             {
                 this.notificationService.NotifyApproachingPayInLimit(to.User.Email);
             }
