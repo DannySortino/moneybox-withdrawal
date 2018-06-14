@@ -24,3 +24,16 @@ As part of this process however, you should look to refactor some of the code in
 Once you have completed your work, send us a link to your public repository.
 
 Good luck!
+
+## Reasons for changes made
+* Decided to privatise the setting of the parameters for the account, as these should not be publicly accessible. There may need to be a method of manually setting these if they would have to be manually changed. However, that would presumably be an edge case, and therefore by importing access to the Account class, it should not then instantly provide access to setting balance amount etc, as this causes the fragility in the code and makes it easy for errors in changing balances elsewhere. This was therefore also done for the User domain.
+
+* As the setting of the User and Account parameters were privatised, this meant a constructer was needed to provide default values for these parameters. 
+
+* By moving code of modifying the balance from the Features into the Account service, it made it possible to privatise the parameters as described before. Also, this meant that the same code could be used for withdrawals and transfers. As transfers effectively can be considered a withdrawal of funds from one account, then a pay in for another account. 
+
+* The tests provide a mechanism for checking the errors that are being checked for in the code cause the exceptions correctly, whilst also checking that the correct actions work correctly.
+
+## What I would like to change if given more time
+* Would be good to create an interface that does the checks, so this can be removed from the Domain.
+* Would also be good to extract the notification checks to remove them from the validation checks in the Features.
